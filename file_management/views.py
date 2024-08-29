@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import File
-from rest_framework.generics import CreateAPIView,GenericAPIView
+from rest_framework.generics import (CreateAPIView,GenericAPIView)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status

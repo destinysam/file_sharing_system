@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import SignUpAPI,SigninAPI,RefreshAccessTokenAPI
+from .views import (SignUpAPI,SigninAPI,RefreshAccessTokenAPI,)
 
 urlpatterns = [
     path("signup/",SignUpAPI.as_view(),name="signup"),

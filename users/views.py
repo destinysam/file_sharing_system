@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User,auth
-from rest_framework.generics import CreateAPIView,GenericAPIView
+from rest_framework.generics import (CreateAPIView,GenericAPIView,)
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework.response import Response
 from .exceptions import InvalidCredentials
 from django.utils.translation import gettext_lazy as _
-from .service import get_login_token,get_token_from_refresh_token
+from .service import (get_login_token,get_token_from_refresh_token,)
 # Create your views here.
 
 class SignUpSerializer(serializers.ModelSerializer):

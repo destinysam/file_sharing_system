@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Message
-from rest_framework.generics import CreateAPIView,GenericAPIView
+from rest_framework.generics import (CreateAPIView,GenericAPIView,)
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from file_management.models import File
 from users.mixin import UserDetailSerializer
+import time
 # Create your views here.
 
 
@@ -44,7 +45,7 @@ class SendMessageAPI(CreateAPIView):
 
 
 
-class ListFileMessageSerializer(serializers.ModelSerializer):
+class LongPoolingMessageSerializer(serializers.ModelSerializer):
     """"
     Output serializer to list file spacefied messages
     """
@@ -62,12 +63,13 @@ class ListFileMessageSerializer(serializers.ModelSerializer):
         return representation
 
 
-class ListFileMessageAPI(GenericAPIView):
+
+class LongPoolingFileMessageAPI(GenericAPIView):
     """"
-    API to list file spacefied messages
+    API to list file spacefied messages using long pooling
     """
 
-    serializer_class = ListFileMessageSerializer
+    serializer_class = LongPoolingMessageSerializer
     permission_classes = [IsAuthenticated]
 
     lookup_url_kwarg = "file_id"
@@ -75,10 +77,16 @@ class ListFileMessageAPI(GenericAPIView):
    
 
     def get(self,request,*args,**kwargs):
+        
         file = get_object_or_404(File,id=self.kwargs["file_id"])
+        last_message_id = request.GET.get("last_message_id",None)
+        if last_message_id:
+            qs = Message.objects.filter(file=file,id__gt=last_message_id).order_by("date_time")
         # sending messages in ascending order
-        qs = Message.objects.filter(file=file)
-        serializer = ListFileMessageSerializer(qs,many=True)
+        else:
+            qs = Message.objects.filter(file=file).order_by("date_time")
+        
+        serializer = LongPoolingMessageSerializer(qs,many=True)
         return Response(data=serializer.data,status=status.HTTP_200_OK)
 
 
