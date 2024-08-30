@@ -80,14 +80,25 @@ class LongPoolingFileMessageAPI(GenericAPIView):
         
         file = get_object_or_404(File,id=self.kwargs["file_id"])
         last_message_id = request.GET.get("last_message_id",None)
-        if last_message_id:
-            qs = Message.objects.filter(file=file,id__gt=last_message_id).order_by("date_time")
-        # sending messages in ascending order
-        else:
-            qs = Message.objects.filter(file=file).order_by("date_time")
         
-        serializer = LongPoolingMessageSerializer(qs,many=True)
-        return Response(data=serializer.data,status=status.HTTP_200_OK)
+        # Explicitly setting timeout to reduce server load
+        timeout = 30
+        poll_interval = 10
+        start_time = time.time()
+        while True:
+            if last_message_id:
+                qs = Message.objects.filter(file=file,id__gt=last_message_id).order_by("date_time")
+            # sending messages in ascending order
+            else:
+                qs = Message.objects.filter(file=file).order_by("date_time")
+            
+            if qs.exists():
+                serializer = LongPoolingMessageSerializer(qs,many=True)
+                return Response(data=serializer.data,status=status.HTTP_200_OK)
+            
+            if (time.time() - start_time) > timeout:
+                return Response(data=[],status=status.HTTP_204_NO_CONTENT)
+            time.sleep(poll_interval)
 
 
 
